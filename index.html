@@ -1,0 +1,560 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta content="text/html;charset=utf-8" http-equiv="Content-Type">
+<meta content="utf-8" http-equiv="encoding">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Ubuntu:300,300italic,400,400italic,500,500italic,700,700italic" media="all">
+<script src='https://cdn.jsdelivr.net/npm/webtorrent@latest/webtorrent.min.js'></script>
+<!-- Primary Meta Tags -->
+<title>FileZilla -
+Torrents on the Web</title>
+<meta name="title" content="FileZilla -
+Torrents on the Web">
+<meta name="description" content="Peer-to-peer file transfer in your browser">
+
+<!-- Open Graph / Facebook -->
+<meta property="og:type" content="website">
+<meta property="og:url" content="http://filezilla.xyz/">
+<meta property="og:title" content="FileZilla - Torrents on the Web">
+<meta property="og:description" content="Peer-to-peer file transfer in your browser">
+<meta property="og:image" content="">
+
+<!-- Twitter -->
+<meta property="twitter:card" content="summary_large_image">
+<meta property="twitter:url" content="https://filezilla.xyz/">
+<meta property="twitter:title" content="FileZilla - Torrents on the Web">
+<meta property="twitter:description" content="Peer-to-peer file transfer in your browser">
+<meta property="twitter:image" content="">    
+<script src='https://bundle.run/prettier-bytes'></script>
+<script src='https://bundle.run/upload-element'></script>
+<script src='https://bundle.run/drag-drop'></script>
+<script src='https://bundle.run/create-torrent'></script>
+<style>
+    html,body {
+        box-sizing: border-box;
+        -webkit-font-smoothing: antialiased;
+    }
+    body{
+        font-family: Ubuntu, Helvetica, sans-serif;
+    }
+    h1{
+        margin-bottom: 10px;
+        letter-spacing: 3px;
+    }
+    h2{
+        font-size: 2em;
+        line-height: 1;
+        letter-spacing: 3px;
+        text-transform: capitalize;
+        margin-bottom: 5px;
+    }
+    hr {
+        width: 300px;
+        height: 1px;
+        background-color: whitesmoke;
+        border: 0 none;
+        margin-bottom: 10px;
+        margin-top: 35px;
+    }
+    #column1 {
+        position: absolute;
+        display: flex;
+        width: 50%;
+        background-color:#f6f7eb;
+        margin: 0 auto;
+        left: 0%;
+        top: 0%;
+        right: auto;
+        bottom: 0%;
+        flex-direction: column;
+        -webkit-box-pack: center;
+        align-items: center;
+        justify-content: center;
+        align-items: center;
+        height: 100%;
+    }
+    #column2 {
+        position: absolute;
+        display: flex;
+        width: 50%;
+        background-color:#2b303a;
+        left: auto;
+        top: 0%;
+        right: 0%;
+        bottom: 0%;
+        flex-direction: column;
+        -webkit-box-pack: center;
+        align-items: center;
+        color: whitesmoke;
+        justify-content: center;
+        height: 100%;
+    }
+    #footer {
+        position: fixed;
+        bottom: 15px;
+        text-align: center;
+        font-size: 12px;
+        line-height: 20px;
+        color: #333;
+        font-weight: 300;
+    }
+    #up {
+        display: flex;
+        flex-direction: column;
+        -webkit-box-pack: center;
+        align-items: center;
+        justify-content: center;
+    }
+    #down {
+        display: flex;
+        flex-direction: column;
+        -webkit-box-pack: center;
+        align-items: center;
+        justify-content: center;
+    }
+    #log {
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        -webkit-box-pack: center;
+        align-items: center;
+        justify-content: center;
+        padding: 35px;
+    }
+    .creds {
+        display: block;
+    }
+    .description {
+        display: flex;
+        flex-direction: column;
+        font-weight: 300;
+        text-align: center;
+        line-height: 25px;
+        color: #333;
+    }
+    label {
+        background-color: #262730;
+        color: white;
+        padding: 0.5rem;
+        border-radius: 1rem;
+        cursor: pointer;
+        padding-left: 20px;
+        padding-right: 20px;
+    }  
+    .dragdrop {
+        padding: 30px;
+        outline:#9ea0be;
+        outline-style: dashed;
+        outline-width: 0.5px;
+    }
+    #speed {
+        display: none;
+        padding: 20px;
+        background-color: darkslategray;
+        margin-top: 20px;
+    }
+    .short {
+        margin-top:0;
+        font-size: small;
+        letter-spacing: 2px;
+    }
+    .rocket-button {
+         margin-top: 30px;
+        --background: #262730;
+        --text: #fff;
+        --check: #5c86ff;
+        --blue: #5c86ff;
+        --blue-transparent: rgba(92, 134, 255, 0);
+        --dot: #fe5151;
+        --dot-shadow: rgba(254, 81, 81, 0.3);
+        --smoke: rgba(247, 248, 255, 0.9);
+        --rocket: #eef0fd;
+        --rocket-shadow-left: #fff;
+        --rocket-shadow-right: #d3d4ec;
+        --rocket-wing-right: #c2c3d9;
+        --rocket-wing-left: #d3d4ec;
+        --rocket-window: #275efe;
+        --rocket-window-shadow: #c2c3d9;
+        --rocket-line: #9ea0be;
+        font-size: 16px;
+        font-weight: 500;
+        line-height: 19px;
+        padding: 14px 28px;
+        display: table;
+        position: relative;
+        -webkit-backface-visibility: hidden;
+        backface-visibility: hidden;
+        text-decoration: none;
+        color: var(--text);
+    }
+    .rocket-button:before {
+        content: "";
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        border-radius: 25px;
+        -webkit-backface-visibility: hidden;
+                backface-visibility: hidden;
+        transition: transform 0.2s ease;
+        transform: scale(var(--s, 1)) translateZ(0);
+        position: absolute;
+        background: var(--background);
+    }
+    .rocket-button .default span{
+        display: block;
+        transition: transform 0.2s ease, opacity 0.2s ease;
+        transform: translateX(var(--x, 0));
+        opacity: var(--o, 1);
+        filter: blur(var(--b, 0px));
+    }
+    .rocket-button .default {
+        position: relative;
+        display: flex;
+    }
+    .rocket-button .default:before {
+        content: "";
+        width: 5px;
+        height: 5px;
+        border-radius: 50%;
+        margin: 7px 8px 0 0;
+        box-shadow: 0 0 0 1px var(--dot-shadow);
+        -webkit-animation: pulse 1s ease infinite;
+                animation: pulse 1s ease infinite;
+        vertical-align: top;
+        display: inline-block;
+        transition: opacity 0.3s linear;
+        opacity: var(--o, 1);
+        background: var(--dot);
+    }
+    #torrentId{
+        display: inline-block;
+        width: 300px;
+        height: 20px;
+        padding: 8px 12px;
+        font-size: 14px;
+        line-height: 1.42857143;
+        color: #333333;
+        vertical-align: middle;
+        background-color: #ffffff;
+        border: 1px solid #cccccc;
+    }
+    .spinner div {
+        position: absolute;
+        width: 120px;
+        height: 120px;
+        border: 1px solid gray;
+        background: rgba(255,255,255,0.8);
+        box-shadow: inset 0 0 20px #dfdfdf;
+        text-align: center;
+        line-height: 120px;
+        font-size: 100px;
+    }
+    .spinner .face1 { 
+        -webkit-transform: translateZ(60px);
+        -ms-transform: translateZ(60px);
+        transform: translateZ(60px);
+    }
+    .spinner .face2 { 
+        -webkit-transform: rotateY(90deg) translateZ(60px); 
+        -ms-transform: rotateY(90deg) translateZ(60px); 
+        transform: rotateY(90deg) translateZ(60px); 
+    }
+    .spinner .face3 { 
+        -webkit-transform: rotateY(90deg) rotateX(90deg) translateZ(60px); 
+        -ms-transform: rotateY(90deg) rotateX(90deg) translateZ(60px); 
+        transform: rotateY(90deg) rotateX(90deg) translateZ(60px); 
+    }
+    .spinner .face4 { 
+        -webkit-transform: rotateY(180deg) rotateZ(90deg) translateZ(60px); 
+        -ms-transform: rotateY(180deg) rotateZ(90deg) translateZ(60px); 
+        transform: rotateY(180deg) rotateZ(90deg) translateZ(60px); 
+    }
+    .spinner .face5 { 
+        -webkit-transform: rotateY(-90deg) rotateZ(90deg) translateZ(60px); 
+        -ms-transform: rotateY(-90deg) rotateZ(90deg) translateZ(60px); 
+        transform: rotateY(-90deg) rotateZ(90deg) translateZ(60px); 
+    }
+    .spinner .face6 { 
+        -webkit-transform: rotateX(-90deg) translateZ(60px); 
+        -ms-transform: rotateX(-90deg) translateZ(60px); 
+        transform: rotateX(-90deg) translateZ(60px); 
+    }
+    .spinner {
+        -webkit-animation: spincube 12s ease-in-out infinite;
+        animation: spincube 12s ease-in-out infinite;
+        -webkit-transform-style: preserve-3d;
+        -ms-transform-style: preserve-3d;
+        transform-style: preserve-3d;
+        -webkit-transform-origin: 60px 60px 0;
+        -ms-transform-origin: 60px 60px 0;
+        transform-origin: 60px 60px 0;
+    }
+    #stage {
+        position: absolute;
+        display: none;
+        padding-top: 80px;
+        width: 120px; 
+        height: 120px;
+        bottom: 50px;
+
+    }
+    @-webkit-keyframes pulse {
+    50% {
+        box-shadow: 0 0 0 2px var(--dot-shadow);
+        }
+    }
+    @keyframes pulse {
+    50% {
+        box-shadow: 0 0 0 2px var(--dot-shadow);
+        }
+    }
+    @media (max-width: 800px) {
+        #column1 {
+            position: relative;
+            display: flex;
+            width: 100%;
+            justify-content: center;
+            padding-bottom: 50px;
+            padding-top: 50px;
+        }
+        #column2 {
+            position: relative;
+            display: flex;
+            width: 100%;
+            justify-content: center;
+            padding-bottom: 50px;
+            padding-top: 50px;
+        }
+        #log {
+            position: relative;
+            display: flex;
+            width: 100%;
+            justify-content: center;
+            padding:35px;
+        }
+        #stage{
+            display: none;
+        }
+    }
+    @-webkit-keyframes spincube {
+        16%      { -webkit-transform: rotateY(-90deg);                }
+        33%      { -webkit-transform: rotateY(-90deg) rotateZ(90deg); }
+        50%      { -webkit-transform: rotateY(180deg) rotateZ(90deg); }
+        66%      { -webkit-transform: rotateY(90deg) rotateX(90deg);  }
+        83%      { -webkit-transform: rotateX(90deg);                 }
+    }
+    @keyframes spincube {
+        16%      { -ms-transform: rotateY(-90deg); transform: rotateY(-90deg); }
+        33%      { -ms-transform: rotateY(-90deg) rotateZ(90deg); transform: rotateY(-90deg) rotateZ(90deg); }
+        50%      { -ms-transform: rotateY(180deg) rotateZ(90deg); transform: rotateY(180deg) rotateZ(90deg); }
+        66%      { -ms-transform: rotateY(90deg) rotateX(90deg); transform: rotateY(90deg) rotateX(90deg); }
+        83%      { -ms-transform: rotateX(90deg); transform: rotateX(90deg); }
+    }
+</style>
+</head>
+<body>
+<div id="column1">
+    <img src="https://gateway.pinata.cloud/ipfs/QmVf47DUKHUxJj83rsdW4ts2TmuVG3soTh5XVeY9jaYfDW" width="400">
+    <p class="description">
+        <b style="padding-bottom: 35px; font-size: larger;">Free peer-to-peer file transfer in your browser</b>
+        <br>
+        Works in Chrome, Firefox, and Opera
+        <br>
+        100% open source & free software
+        <span>Source code available on <a href="https://github.com/Omodaka9375?tab=repositories" style="display: inline;">GitHub</a></span>
+    </p>
+    <div id="footer">
+        <span class="creds">Developed with 💗 by <a href="https://github.com/Omodaka9375" target="_blank">Omodaka9375</a></span>
+        <span class="creds">Designed with 🔥 by <a href="https://www.jskform.com/" target="_blank">JSK form</a></span>
+        Powered by <a href="http://webtorrent.io/" target="_blank" >WebTorrent</a>
+    </div>
+</div>
+<div id="column2">
+  <div id="up">
+    <h2>Start downloading</h2>
+    <p class="short">Download directly from info hash</p>
+    <input name='torrentId' id='torrentId' required />
+    <a href="#" class="rocket-button"><div class="default">Download File</div></a>
+  </div>  
+  <hr>
+  <div id="down">
+    <h2>Start Sharing</h2>
+    <p class="dragdrop">Drag-and-drop files to begin seeding</p>
+    <p>Or choose files:</p>
+    <input type="file" name="upload" id="upload" multiple hidden/>
+    <label for="upload">Browse files ...</label>
+  </div>
+  <div id="speed"></div>
+  <div id="log"></div>
+  <div id="stage">
+    <div class="spinner">
+        <div class="face1"></div>
+        <div class="face2"></div>
+        <div class="face3"></div>
+        <div class="face4"></div>
+        <div class="face5"></div>
+        <div class="face6"></div>
+    </div>
+</div>
+</div>
+<script>
+    let client
+    function init () {
+    // Create a WebTorrent client
+    client = new WebTorrent()
+    // Log when a warning or error occurs
+    client.on('warning', logError)
+    client.on('error', logError)
+    // Download torrent when download form is submitted
+    const download = document.querySelector('.rocket-button')
+    download.addEventListener('click', event => {
+        event.preventDefault()
+        
+        const torrentId = document.querySelector('#torrentId').value.trim()
+        if(torrentId == "" || torrentId == " " || torrentId.includes("http")){
+            return
+        }
+        document.getElementById("down").style.display="none";
+        addTorrent(torrentId)
+    })
+    // Share files via upload input element
+    const upload = document.querySelector('#upload')
+    uploadElement(upload, (err, results) => {
+        if (err) {
+        logError(err)
+        return
+        }
+        document.getElementById("up").style.display="none";
+        //document.getElementById("stage").style.display="block";
+        // For each result, get the File object
+        const files = results.map(result => result.file)
+        seedFiles(files)
+    })
+    // Share files via drag-and-drop anywhere on the page
+    const body = document.querySelector('body')
+        dragDrop(body, seedFiles)
+    }
+
+    function check(){
+        var autoDownload = window.location.hash.substr(1) ? true : false
+        if(autoDownload){
+            addTorrent(window.location.hash.substr(1))
+        }
+    }
+
+    init()
+
+    function addTorrent (infohash) {
+        document.getElementById("down").style.display="none";
+        const announce = createTorrent.announceList
+        .map(arr => arr[0])
+        .filter(url => url.startsWith('wss://') || url.startsWith('ws://'))
+        var ret = 'magnet:?xt=urn:btih:' + infohash
+        client.add(infohash, { announce }, handleTorrent)
+        log(`Downloading torrent ...`)
+    }
+
+    function seedFiles (files) {
+        // Ignore any drag-and-drop that is not a file (i.e. text)
+        if (files.length === 0) return
+        client.seed(files, handleTorrent)
+        log(`Seeding new torrent with ${files.length} files!`)
+    }
+
+    function handleTorrent (torrent) {
+        torrent.on('warning', logError)
+        torrent.on('error', logError)
+        
+        const speed= document.querySelector('#speed')
+        speed.style.display = "block"  
+        // Show the speed stats immediately
+        updateSpeed(torrent)
+        // Update the speed stats once per second
+        const interval = setInterval(() => {
+            updateSpeed(torrent)
+        }, 1000)
+        // When the torrent is done, update the stats one last time, then stop calling updateSpeed()
+        torrent.on('done', () => {
+            updateSpeed(torrent)
+            clearInterval(interval)
+        })
+        const torrentIds = torrent.magnetURI.split('&')
+        const torId = torrentIds[0].split(':')
+        console.log(torId[3])
+        log('Shareable Link:')
+        loga('https://filezilla.xyz/#' + `${torId[3]}`)
+        log('Downloadable Files:')
+        torrent.files.forEach(file => {       
+        // Add a download link
+        file.getBlobURL((err, url) => {
+            if (err) {
+                // If there was an error, add it to the log section
+                logError(err)
+                return
+            }
+            // Create a link element
+            const a = document.createElement('a')
+            a.style.color= "#cea1a1"
+            a.href = url
+            a.textContent = file.name + ` (${prettierBytes(file.length)})`
+            a.style.display = 'block'
+
+            // Download the file with given name when clicked
+            a.download = file.name
+            
+            // Add the link to the log section
+            logElement(a)
+        })
+    })
+}
+
+    function updateSpeed (torrent) {
+        const progress = (100 * torrent.progress).toFixed(1)
+        const speed = `
+            <b>Progress:</b> ${progress}% |
+            <b>Peers:</b> ${torrent.numPeers} |
+            <b>Download speed:</b> ${prettierBytes(client.downloadSpeed)}/s |
+            <b>Upload speed:</b> ${prettierBytes(client.uploadSpeed)}/s
+        `
+        const speedInfo = document.querySelector('#speed')
+        speedInfo.innerHTML = speed
+    }
+
+    // Log a string message
+    function log (message) {
+    const log = document.querySelector('#log')
+    const p = document.createElement('p')
+    p.textContent = message
+    log.appendChild(p)
+    }
+
+    // Log a string message
+    function loga (message) {
+    const log = document.querySelector('#log')
+    const p = document.createElement('a')
+    p.href = message
+    p.style.color = "#cea1a1"
+    p.style.padding = "15px"
+    p.style.backgroundColor = "#333"
+    p.text = message
+    log.appendChild(p)
+    }
+
+    // Log an error object
+    function logError (err) {
+        console.log(err.message);
+    }
+
+    // Log an HTML element
+    function logElement (elem) {
+    const log = document.querySelector('#log')
+    log.appendChild(elem)
+    }
+    window.addEventListener('load', function() {
+        check()
+    })
+</script>
+</body>
+</html>
